@@ -230,7 +230,7 @@ static int pbuf_free_locked(pbuf_element_t *buf, CSP_BASE_TYPE *task_woken, bool
 		if (task_woken == NULL) {
 			csp_buffer_free(buf->packet);
 		} else {
-			csp_buffer_free_isr(buf->packet);
+			csp_buffer_free_isr(buf->packet, task_woken);
 		}
 	}
 
