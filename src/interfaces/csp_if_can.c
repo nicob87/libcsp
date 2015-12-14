@@ -85,7 +85,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 							| CFP_MAKE_ID((uint32_t)(1 << CFP_ID_SIZE) - 1))
 
 /** Maximum Transmission Unit for CSP over CAN */
-#define CSP_CAN_MTU 256
+#include <platform/mtu.h>
+#define CSP_CAN_MTU CSP_IFC_MTU
 
 /** Maximum number of frames in RX queue */
 #define CSP_CAN_RX_QUEUE_SIZE 100
@@ -753,7 +754,7 @@ int csp_can_init_ifc(csp_iface_t *csp_iface, uint8_t mode, struct csp_can_config
 	/* Initialize CAN driver */
 	csp_iface->name = conf->ifc;
 	csp_iface->nexthop = csp_can_tx;
-	csp_iface->mtu = CSP_CAN_MTU;
+	csp_iface->mtu = CSP_MTU;
 
 	if (mode == CSP_CAN_MASKED) {
 		mask = CFP_MAKE_DST((1 << CFP_HOST_SIZE) - 1);
@@ -791,5 +792,5 @@ int csp_can_init(uint8_t mode, struct csp_can_config *conf) {
 csp_iface_t csp_if_can = {
 	.name = "CAN",
 	.nexthop = csp_can_tx,
-	.mtu = CSP_CAN_MTU,
+	.mtu = CSP_MTU,
 };
