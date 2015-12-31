@@ -222,6 +222,7 @@ int csp_route_work(uint32_t timeout) {
 		/* New incoming connection accepted */
 		csp_id_t idout;
 		idout.pri   = packet->id.pri;
+
 		if (packet->id.dst == CSP_BROADCAST_ADDR) {
 			idout.src = my_address;
 		} else {

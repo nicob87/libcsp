@@ -501,9 +501,16 @@ int csp_sendto_reply(csp_packet_t * request_packet, csp_packet_t * reply_packet,
 	if (request_packet == NULL)
 		return CSP_ERR_INVAL;
 
+	uint8_t src;
+	if (packet->id.dst == CSP_BROADCAST_ADDR) {
+		src = my_address;
+	} else {
+		src = packet->id.dst;
+	}
+
 	return csp_sendto_from(
 		request_packet->id.pri,
 		request_packet->id.src, request_packet->id.sport,
-		request_packet->id.dst, request_packet->id.dport,
+		src, request_packet->id.dport,
 		opts, reply_packet, timeout);
 }
