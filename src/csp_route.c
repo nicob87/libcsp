@@ -1,7 +1,7 @@
 /*
 Cubesat Space Protocol - A small network-layer protocol designed for Cubesats
 Copyright (C) 2012 GomSpace ApS (http://www.gomspace.com)
-Copyright (C) 2012 AAUSAT3 Project (http://aausat3.space.aau.dk) 
+Copyright (C) 2012 AAUSAT3 Project (http://aausat3.space.aau.dk)
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -162,10 +162,9 @@ int csp_route_work(uint32_t timeout) {
 		return 0;
 	}
 #endif
-
+	
 	/* If the message is not to me, route the message to the correct interface */
-	if ((packet->id.dst != my_address) && (packet->id.dst != CSP_BROADCAST_ADDR)) {
-
+	if ((!csp_is_address_mine(packet->id.dst)) && (packet->id.dst != CSP_BROADCAST_ADDR)) {
 		/* Find the destination interface */
 		csp_iface_t * dstif = csp_rtable_find_iface(packet->id.dst);
 
@@ -223,7 +222,7 @@ int csp_route_work(uint32_t timeout) {
 		/* New incoming connection accepted */
 		csp_id_t idout;
 		idout.pri   = packet->id.pri;
-		idout.src   = my_address;
+		idout.src   = packet->id.dst;
 
 		idout.dst   = packet->id.src;
 		idout.dport = packet->id.sport;

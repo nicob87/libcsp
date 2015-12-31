@@ -1,7 +1,7 @@
 /*
 Cubesat Space Protocol - A small network-layer protocol designed for Cubesats
 Copyright (C) 2012 GomSpace ApS (http://www.gomspace.com)
-Copyright (C) 2012 AAUSAT3 Project (http://aausat3.space.aau.dk) 
+Copyright (C) 2012 AAUSAT3 Project (http://aausat3.space.aau.dk)
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -51,7 +51,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 /** Static local variables */
 unsigned char my_address;
 
-/* Hostname and model */ 
+unsigned char my_dynamic_address;
+bool dynamic_address_enabled = false;
+
+/* Hostname and model */
 static char * csp_hostname = NULL;
 static char * csp_model = NULL;
 
@@ -107,8 +110,35 @@ int csp_init(unsigned char address) {
 
 }
 
+int csp_enable_dynamic_address(unsigned char address) {
+	if (dynamic_address_enabled) {
+		return CSP_ERR_USED;
+	}
+	my_dynamic_address = address;
+	dynamic_address_enabled = true;
+	return CSP_ERR_NONE;
+}
+
+int csp_disable_dynamic_address() {
+	if (!dynamic_address_enabled) {
+		return CSP_ERR_USED;
+	}
+	dynamic_address_enabled = false;
+	return CSP_ERR_NONE;
+}
+
+bool csp_is_address_mine(unsigned char address) {
+	if (address == my_address) {
+		return true;
+	}
+	if (dynamic_address_enabled && address == my_dynamic_address) {
+		return true;
+	}
+	return false;
+}
+
 csp_socket_t * csp_socket(uint32_t opts) {
-	
+
 	/* Validate socket options */
 #ifndef CSP_USE_RDP
 	if (opts & CSP_SO_RDPREQ) {
@@ -128,16 +158,16 @@ csp_socket_t * csp_socket(uint32_t opts) {
 	if (opts & CSP_SO_HMACREQ) {
 		csp_log_error("Attempt to create socket that requires HMAC, but CSP was compiled without HMAC support");
 		return NULL;
-	} 
+	}
 #endif
 
 #ifndef CSP_USE_CRC32
 	if (opts & CSP_SO_CRC32REQ) {
 		csp_log_error("Attempt to create socket that requires CRC32, but CSP was compiled without CRC32 support");
 		return NULL;
-	} 
+	}
 #endif
-	
+
 	/* Drop packet if reserved flags are set */
 	if (opts & ~(CSP_SO_RDPREQ | CSP_SO_XTEAREQ | CSP_SO_HMACREQ | CSP_SO_CRC32REQ | CSP_SO_CONN_LESS)) {
 		csp_log_error("Invalid socket option");
@@ -227,14 +257,14 @@ int csp_send_direct(csp_id_t idout, csp_packet_t * packet, csp_iface_t * ifout, 
 
 #ifdef CSP_USE_PROMISC
 	/* Loopback traffic is added to promisc queue by the router */
-	if (idout.dst != my_address && idout.src == my_address) {
+	if (!csp_is_address_mine(idout.dst) && csp_is_address_mine(idout.src)) {
 		packet->id.ext = idout.ext;
 		csp_promisc_add(packet);
 	}
 #endif
 
 	/* Only encrypt packets from the current node */
-	if (idout.src == my_address) {
+	if (csp_is_address_mine(idout.src)) {
 		/* Append HMAC */
 		if (idout.flags & CSP_FHMAC) {
 #ifdef CSP_USE_HMAC
@@ -457,7 +487,7 @@ int csp_sendto(uint8_t prio, uint8_t dest, uint8_t dport, uint8_t src_port, uint
 	csp_iface_t * ifout = csp_rtable_find_iface(dest);
 	if (csp_send_direct(packet->id, packet, ifout, timeout) != CSP_ERR_NONE)
 		return CSP_ERR_NOTSUP;
-	
+
 	return CSP_ERR_NONE;
 
 }

@@ -62,6 +62,8 @@ def options(ctx):
                   help='Enable Python bindings')
     gr.add_option('--enable-examples', action='store_true',
                   help='Enable examples')
+    gr.add_option('--build-tests', action='store_true',
+                  help='Enable examples')
     gr.add_option('--enable-dedup', action='store_true',
                   help='Enable packet deduplicator')
     gr.add_option('--enable-verbose', action='store_true',
@@ -167,8 +169,10 @@ def configure(ctx):
                                         'src/transport/csp_udp.c', 'src/arch/{0}/**/*.c'.format(ctx.options.with_os)])
 
     # Libs
+    ctx.env.OS = ctx.options.with_os
     if 'posix' in ctx.env.OS:
         ctx.env.append_unique('LIBS', ['rt', 'pthread', 'util'])
+        print ("addedpthread!!!!")
     elif 'macosx' in ctx.env.OS:
         ctx.env.append_unique('LIBS', ['pthread'])
 
@@ -220,6 +224,7 @@ def configure(ctx):
     # Store configuration options
     ctx.env.ENABLE_BINDINGS = ctx.options.enable_bindings
     ctx.env.ENABLE_EXAMPLES = ctx.options.enable_examples
+    ctx.env.BUILD_TESTS = ctx.options.build_tests
 
     # Create config file
     if not ctx.options.disable_output:
@@ -353,20 +358,28 @@ def build(ctx):
             ctx.program(source='examples/kiss.c',
                         target='kiss',
                         includes=ctx.env.INCLUDES_CSP,
-                        lib=libs,
+                        lib=ctx.env.LIBS,
                         use='csp')
 
         if 'posix' in ctx.env.OS:
             ctx.program(source='examples/csp_if_fifo.c',
                         target='fifo',
                         includes=ctx.env.INCLUDES_CSP,
-                        lib=libs,
+                        lib=ctx.env.LIBS,
                         use='csp')
 
         if 'windows' in ctx.env.OS:
             ctx.program(source=ctx.path.ant_glob('examples/csp_if_fifo_windows.c'),
                         target='csp_if_fifo',
                         includes=ctx.env.INCLUDES_CSP,
+                        use='csp')
+
+    if ctx.env.BUILD_TESTS:
+        if 'posix' in ctx.env.OS:
+            ctx.program(source='tests/tester.c',
+                        target='tester',
+                        includes=ctx.env.INCLUDES_CSP,
+                        lib=ctx.env.LIBS,
                         use='csp')
 
 

@@ -1,7 +1,7 @@
 /*
 Cubesat Space Protocol - A small network-layer protocol designed for Cubesats
 Copyright (C) 2012 GomSpace ApS (http://www.gomspace.com)
-Copyright (C) 2012 AAUSAT3 Project (http://aausat3.space.aau.dk) 
+Copyright (C) 2012 AAUSAT3 Project (http://aausat3.space.aau.dk)
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -41,7 +41,7 @@ int csp_lo_tx(csp_iface_t * interface, csp_packet_t * packet, uint32_t timeout) 
 	 * blackhole routing addresses by setting their nexthop to
 	 * the loopback interface.
 	 */
-	if (packet->id.dst != my_address) {
+	if (!csp_is_address_mine(packet->id.dst)) {
 		/* Consume and drop packet */
 		csp_buffer_free(packet);
 		return CSP_ERR_NONE;

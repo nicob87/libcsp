@@ -1,7 +1,7 @@
 /*
 Cubesat Space Protocol - A small network-layer protocol designed for Cubesats
 Copyright (C) 2012 Gomspace ApS (http://www.gomspace.com)
-Copyright (C) 2012 AAUSAT3 Project (http://aausat3.space.aau.dk) 
+Copyright (C) 2012 AAUSAT3 Project (http://aausat3.space.aau.dk)
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -42,11 +42,35 @@ extern "C" {
 /** The address of the node */
 extern uint8_t my_address;
 
+/** the dynamic address */
+extern uint8_t my_dynamic_address;
+
+/** is dynamic enabled? */
+extern bool dynamic_address_enabled;
+
 /** csp_init
  * Start up the can-space protocol
  * @param my_node_address The CSP node address
  */
 int csp_init(uint8_t my_node_address);
+
+/** csp_enable_dynamic_address
+ * This node will also act as the node for that address
+ * @param my_node_address The CSP node address
+ */
+int csp_enable_dynamic_address(uint8_t my_node_address);
+
+/** csp_disable_dynamic_address
+ * This node will also stop acting ad the dynamic node
+ */
+int csp_disable_dynamic_address();
+
+/** csp_is_address_mine
+ * Is this one of my addresses?
+ * @param address The CSP node address
+ */
+
+bool csp_is_address_mine(uint8_t address);
 
 /** csp_set_hostname
  * Set subsystem hostname.
