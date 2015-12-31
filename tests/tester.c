@@ -95,6 +95,10 @@ int command(csp_socket_t *sock, int target, char *command, char *expected) {
         printf("Reply without packet\n");
         return -1;
     }
+    if (reply_packet->id.src != target) {
+        printf("Reply from different host\n");
+        return -1;
+    }
     if (!iscommand(reply_packet, expected)) {
         printf("Expected %s, got %s\n", expected, reply_packet->data);
         return -1;
@@ -105,7 +109,7 @@ int command(csp_socket_t *sock, int target, char *command, char *expected) {
 
 int main(int argc, char **argv) {
 
-    int me, other, type;
+    int me, type;
     char *rx_channel_name, *tx_channel_name;
     int ret = 0;
     csp_socket_t *sock;
@@ -120,13 +124,11 @@ int main(int argc, char **argv) {
     /* Set type */
     if (strcmp(argv[1], "server") == 0) {
         me = SERVER_NODE_ID;
-        other = CLIENT_NODE_ID;
         tx_channel_name = "server_to_client";
         rx_channel_name = "client_to_server";
         type = TYPE_SERVER;
     } else if (strcmp(argv[1], "client") == 0) {
         me = CLIENT_NODE_ID;
-        other = SERVER_NODE_ID;
         tx_channel_name = "client_to_server";
         rx_channel_name = "server_to_client";
         type = TYPE_CLIENT;
@@ -185,7 +187,7 @@ int main(int argc, char **argv) {
                     if (!reply_packet) {
                         return -1;
                     }
-                    csp_sendto(CSP_PRIO_NORM, other, PORT, PORT, CSP_SO_CONN_LESS, reply_packet, 1000);
+                    csp_sendto_reply(packet, reply_packet, CSP_PRIO_NORM, 1000);
 
                 }
                 if (iscommand(packet, "enable")) {
@@ -197,7 +199,7 @@ int main(int argc, char **argv) {
                     if (!reply_packet) {
                         return -1;
                     }
-                    csp_sendto(CSP_PRIO_NORM, other, PORT, PORT, CSP_SO_CONN_LESS, reply_packet, 1000);
+                    csp_sendto_reply(packet, reply_packet, CSP_PRIO_NORM, 1000);
 
                 }
                 if (iscommand(packet, "disable")) {
@@ -205,11 +207,11 @@ int main(int argc, char **argv) {
                         reply_packet = new_packet("ok");
                     } else {
                         reply_packet = new_packet("error");
-                    }                    
+                    }
                     if (!reply_packet) {
                         return -1;
                     }
-                    csp_sendto(CSP_PRIO_NORM, other, PORT, PORT, CSP_SO_CONN_LESS, reply_packet, 1000);
+                    csp_sendto_reply(packet, reply_packet, CSP_PRIO_NORM, 1000);
 
                 }
                 csp_buffer_free(packet);

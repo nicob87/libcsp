@@ -442,7 +442,7 @@ csp_packet_t * csp_recvfrom(csp_socket_t * socket, uint32_t timeout) {
 
 }
 
-int csp_sendto(uint8_t prio, uint8_t dest, uint8_t dport, uint8_t src_port, uint32_t opts, csp_packet_t * packet, uint32_t timeout) {
+int csp_sendto_from(uint8_t prio, uint8_t dest, uint8_t dport, uint8_t src, uint8_t src_port, uint32_t opts, csp_packet_t * packet, uint32_t timeout) {
 
 	packet->id.flags = 0;
 
@@ -480,7 +480,7 @@ int csp_sendto(uint8_t prio, uint8_t dest, uint8_t dport, uint8_t src_port, uint
 
 	packet->id.dst = dest;
 	packet->id.dport = dport;
-	packet->id.src = my_address;
+	packet->id.src = src;
 	packet->id.sport = src_port;
 	packet->id.pri = prio;
 
@@ -492,9 +492,18 @@ int csp_sendto(uint8_t prio, uint8_t dest, uint8_t dport, uint8_t src_port, uint
 
 }
 
+
+int csp_sendto(uint8_t prio, uint8_t dest, uint8_t dport, uint8_t src_port, uint32_t opts, csp_packet_t * packet, uint32_t timeout) {
+	return csp_sendto_from(prio, dest, dport, my_address, src_port, opts, packet, timeout);
+}
+
 int csp_sendto_reply(csp_packet_t * request_packet, csp_packet_t * reply_packet, uint32_t opts, uint32_t timeout) {
 	if (request_packet == NULL)
 		return CSP_ERR_INVAL;
 
-	return csp_sendto(request_packet->id.pri, request_packet->id.src, request_packet->id.sport, request_packet->id.dport, opts, reply_packet, timeout);
+	return csp_sendto_from(
+		request_packet->id.pri,
+		request_packet->id.src, request_packet->id.sport,
+		request_packet->id.dst, request_packet->id.dport,
+		opts, reply_packet, timeout);
 }
