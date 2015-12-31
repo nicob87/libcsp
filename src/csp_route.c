@@ -162,7 +162,7 @@ int csp_route_work(uint32_t timeout) {
 		return 0;
 	}
 #endif
-	
+
 	/* If the message is not to me, route the message to the correct interface */
 	if ((!csp_is_address_mine(packet->id.dst)) && (packet->id.dst != CSP_BROADCAST_ADDR)) {
 		/* Find the destination interface */
@@ -222,7 +222,12 @@ int csp_route_work(uint32_t timeout) {
 		/* New incoming connection accepted */
 		csp_id_t idout;
 		idout.pri   = packet->id.pri;
-		idout.src   = packet->id.dst;
+		if (packet->id.dst == CSP_BROADCAST_ADDR) {
+			idout.src = my_address;
+		} else {
+			idout.src = packet->id.dst;
+		}
+
 
 		idout.dst   = packet->id.src;
 		idout.dport = packet->id.sport;
