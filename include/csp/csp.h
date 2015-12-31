@@ -200,6 +200,21 @@ csp_packet_t *csp_recvfrom(csp_socket_t *socket, uint32_t timeout);
 int csp_sendto(uint8_t prio, uint8_t dest, uint8_t dport, uint8_t src_port, uint32_t opts, csp_packet_t *packet, uint32_t timeout);
 
 /**
+ * Send a packet without previously opening a connection
+ * @param prio CSP_PRIO_x
+ * @param dest destination node
+ * @param dport destination port
+ * @param src source node
+ * @param src_port source port
+ * @param opts CSP_O_x
+ * @param packet pointer to packet
+ * @param timeout timeout used by interfaces with blocking send
+ * @return -1 if error (you must free packet), 0 if OK (you must discard pointer)
+ */
+int csp_sendto_from(uint8_t prio, uint8_t dest, uint8_t dport, uint8_t src, uint8_t src_port, uint32_t opts, csp_packet_t *packet, uint32_t timeout);
+
+
+/**
  * Send a packet as a direct reply to the source of an incoming packet,
  * but still without holding an entire connection
  * @param request_packet pointer to packet to reply to
